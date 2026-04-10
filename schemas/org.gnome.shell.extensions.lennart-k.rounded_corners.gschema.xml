@@ -6,5 +6,10 @@
 			<summary>corner radius</summary>
 			<description/>
 		</key>
+		<key type="s" name="corner-margins">
+			<default>"[]"</default>
+			<summary>corner margins per monitor and direction</summary>
+			<description>JSON array indexed by monitor, each entry has top/right/bottom/left integer values</description>
+		</key>
 	</schema>
 </schemalist>

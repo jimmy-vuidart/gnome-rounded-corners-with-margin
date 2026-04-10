@@ -14,7 +14,7 @@ export default class extends Extension {
 
     enable() {
         this._settings = this.getSettings();
-        this._bindHandle = this._settings.connect('changed::corner-radius', () => this.drawCorners())
+        this._bindHandle = this._settings.connect('changed', () => this.drawCorners())
         this._monitorListener = Gio.DBus.session.signal_subscribe(
             'org.gnome.Mutter.DisplayConfig',
             'org.gnome.Mutter.DisplayConfig',
@@ -37,14 +37,32 @@ export default class extends Extension {
     drawCorners() {
         const radius = this._settings.get_int('corner-radius')
         const cornerDir = this.dir.get_child('corners').get_path();
+
+        let marginsData = []
+        try { marginsData = JSON.parse(this._settings.get_string('corner-margins')) } catch(e) {}
+
         this.destroyCorners()
 
         for (let monitor of Main.layoutManager.monitors) {
             let geometryScale = monitor.geometry_scale || 1
+            const m = marginsData[monitor.index] ?? {}
+            const margins = {
+                top:    m.top    ?? 0,
+                right:  m.right  ?? 0,
+                bottom: m.bottom ?? 0,
+                left:   m.left   ?? 0,
+            }
 
             for (let corner of ['tl', 'tr', 'bl', 'br']) {
-                let x = monitor.x + ((corner[1] == 'l') ? 0 : monitor.width - geometryScale*radius)
-                let y = monitor.y + ((corner[0] == 't') ? 0 : monitor.height - geometryScale*radius)
+                const isLeft = corner[1] === 'l'
+                const isTop  = corner[0] === 't'
+
+                let x = monitor.x + (isLeft
+                    ? margins.left
+                    : monitor.width - geometryScale * radius - margins.right)
+                let y = monitor.y + (isTop
+                    ? margins.top
+                    : monitor.height - geometryScale * radius - margins.bottom)
 
                 let cornerDecoration = this.corners[`${monitor.index}-${corner}`] = new St.Bin({
                     style_class: `corner-decoration corner-{${corner}}`,
@@ -72,4 +90,3 @@ export default class extends Extension {
         this.corners = {}
     }
 }
-
