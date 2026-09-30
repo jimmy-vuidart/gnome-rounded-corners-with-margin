@@ -22,6 +22,24 @@ export default class extends ExtensionPreferences {
     });
     radiusRow.add_suffix(radiusSpin);
     radiusGroup.add(radiusRow);
+
+    // --- Fill: Blur my Shell blur or plain color ---
+    const comboRow = (title, subtitle, key, values, labels) => {
+      const row = new Adw.ComboRow({ title, subtitle, model: Gtk.StringList.new(labels) });
+      row.selected = Math.max(0, values.indexOf(settings.get_string(key)));
+      row.connect('notify::selected', () => settings.set_string(key, values[row.selected]));
+      radiusGroup.add(row);
+      return row;
+    };
+    comboRow('Corner fill', 'Blur falls back to the plain color when Blur my Shell is not running',
+      'corner-style', ['blur', 'color'], ['Blur my Shell blur', 'Plain color']);
+    const sourceRow = comboRow('Blur source', 'Blur my Shell pipeline to copy',
+      'blur-source', ['panel', 'dash-to-dock'], ['Top panel', 'Dash to Dock']);
+    const updateSourceRow = () => sourceRow.sensitive = settings.get_string('corner-style') === 'blur';
+    const styleId = settings.connect('changed::corner-style', updateSourceRow);
+    window.connect('close-request', () => settings.disconnect(styleId));
+    updateSourceRow();
+
     page.add(radiusGroup);
 
     // --- Per-monitor margins ---

@@ -11,5 +11,23 @@
 			<summary>corner margins per monitor and direction</summary>
 			<description>JSON array indexed by monitor, each entry has top/right/bottom/left integer values</description>
 		</key>
+		<key type="s" name="corner-style">
+			<choices>
+				<choice value="blur"/>
+				<choice value="color"/>
+			</choices>
+			<default>"blur"</default>
+			<summary>corner fill</summary>
+			<description>"blur": same static blur as Blur my Shell (falls back to the plain color when Blur my Shell is not running); "color": plain color</description>
+		</key>
+		<key type="s" name="blur-source">
+			<choices>
+				<choice value="panel"/>
+				<choice value="dash-to-dock"/>
+			</choices>
+			<default>"panel"</default>
+			<summary>Blur my Shell pipeline to copy</summary>
+			<description>Which Blur my Shell component's pipeline the corners use</description>
+		</key>
 	</schema>
 </schemalist>
