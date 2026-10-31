@@ -69,17 +69,19 @@ export class BlurMyShellLink {
     _reload() {
         this._disconnectSettings();
 
+        // user installs ship their schema, system installs (distro packages)
+        // put it in the default schema source
         const ext = Main.extensionManager.lookup(BMS_UUID);
         const schemaDir = ext?.dir.get_child('schemas');
-        if (schemaDir?.query_exists(null)) {
-            try {
-                const source = Gio.SettingsSchemaSource.new_from_directory(
-                    schemaDir.get_path(), Gio.SettingsSchemaSource.get_default(), false);
-                const schema = source.lookup(BMS_SCHEMA, true);
-                if (schema) this._settings = new Gio.Settings({ settings_schema: schema });
-            } catch (e) {
-                console.warn(`[Rounded Corners] cannot read Blur my Shell settings: ${e}`);
-            }
+        try {
+            let source = Gio.SettingsSchemaSource.get_default();
+            if (schemaDir?.query_exists(null))
+                source = Gio.SettingsSchemaSource.new_from_directory(
+                    schemaDir.get_path(), source, false);
+            const schema = source?.lookup(BMS_SCHEMA, true);
+            if (schema) this._settings = new Gio.Settings({ settings_schema: schema });
+        } catch (e) {
+            console.warn(`[Rounded Corners] cannot read Blur my Shell settings: ${e}`);
         }
 
         if (this._settings) {
